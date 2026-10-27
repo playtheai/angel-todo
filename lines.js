@@ -20,6 +20,19 @@ window.LINES = {
     ground: ['내 엉덩이가 너무 무거웠으면 미안하고요..'],            // 떨어져서 바닥에 닿았을 때
   },
 
+  // ---------- 설정 화면에서 보이는 대사 이름 (위에서 아래 순서대로 나와요) ----------
+  speechLabels: {
+    start: '앱을 처음 열었을 때',
+    rising: '탭해서 막 날아오를 때',
+    fast: '연타로 빠르게 올라갈 때',
+    milestone: '200m마다 올라갈 때',
+    falling: '떨어질 때',
+    rest: '낮은 구름에 착지했을 때',
+    restHigh: '높은 구름에 착지했을 때',
+    cloudMade: '할 일을 완료했을 때',
+    ground: '바닥에 떨어졌을 때',
+  },
+
   // ---------- 화면 글자 ----------
   ui: {
     title: '엉떨무천을 날게 하자!',                          // 브라우저 탭 / 홈 화면 이름
@@ -34,5 +47,15 @@ window.LINES = {
     height: '{n}m',                              // 위쪽 현재 높이
     best: '오늘 최고 {n}m',                      // 위쪽 최고 기록
     bestLine: '오늘 최고 {n}m',                  // 하늘에 그어지는 최고 기록 점선 옆 글자
+
+    // 대사 설정 화면
+    settingsButton: '💬 대사',
+    settingsTitle: '천사 대사 바꾸기',
+    settingsHelp: '한 줄에 하나씩 쓰면 그중 하나가 랜덤으로 나와요. 비워 두면 기본 대사가 나와요. (한 줄 최대 {n}자)',
+    settingsSave: '저장',
+    settingsReset: '모두 기본으로',
+    settingsResetConfirm: '내가 바꾼 대사를 모두 지우고 기본 대사로 돌아갈까요?',
+    settingsClose: '닫기',
+    settingsSaved: '저장했어요!',                  // 저장하면 천사가 말풍선으로 말함
   },
 };

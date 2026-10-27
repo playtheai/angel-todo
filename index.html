@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#cfe6ff">
+<meta name="theme-color" content="#a8ceff">
 <!-- 홈 화면 아이콘 아래 이름 (아이폰은 추가할 때 직접 고칠 수도 있음) -->
 <meta name="apple-mobile-web-app-title" content="엉떨무천">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -14,62 +14,109 @@
 <link rel="manifest" href="manifest.webmanifest">
 <title>천사 투두 V0</title>
 <style>
+  /* 픽셀 캐릭터 + 말랑한 UI: 같은 팔레트, 둥근 박스, 2px 코코아 테두리, 아래로 깔린 젤리 그림자 */
   :root {
-    --bg: #f6f8fc;
-    --panel: #ffffff;
-    --text: #1d2433;
-    --muted: #7a8396;
-    --line: #e4e8f0;
-    --accent: #6c3424;      /* 캐릭터 라인 색 */
-    --on-accent: #ffffff;
-    --done: #a9b1c2;
+    --bg: #fff6e6;
+    --panel: #fffaf0;
+    --text: #4a2a1f;
+    --muted: #9a7464;
+    --line: #6f3d2e;        /* 캐릭터 라인 색 (테두리) */
+    --soft: #f1dfc4;        /* 목록 구분선 */
+    --accent: #6f3d2e;
+    --on-accent: #fffaf0;
+    --done: #b79c8c;
+    --shadow: #6f3d2e;
+    --check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath fill='%23fffaf0' d='M1 4h1v1h1v1h1V5h1V4h1V3h1V2h1v1h-1v1h-1v1h-1v1h-1v1H3V6H2V5H1z'/%3E%3C/svg%3E");
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #12151c;
-      --panel: #1a1f29;
-      --text: #e8ecf3;
-      --muted: #8a93a6;
-      --line: #2a3140;
-      --accent: #c48b6f;    /* 어두운 배경에서 보이도록 밝힌 라인 색 */
-      --on-accent: #1a1f29;
-      --done: #5d6578;
+      --bg: #1e2140;
+      --panel: #282c52;
+      --text: #fffaf0;
+      --muted: #aaa4cc;
+      --line: #ffe6a3;      /* 밤하늘에 어울리는 버터색 테두리 */
+      --soft: #3a3f6e;
+      --accent: #ffc98f;
+      --on-accent: #2a1a14;
+      --done: #6e6a90;
+      --shadow: #10122a;
+      --check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath fill='%232a1a14' d='M1 4h1v1h1v1h1V5h1V4h1V3h1V2h1v1h-1v1h-1v1h-1v1h-1v1H3V6H2V5H1z'/%3E%3C/svg%3E");
     }
   }
+  :root { --r: 14px; --jelly: cubic-bezier(.3, 1.8, .5, 1); }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
-    font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", sans-serif; }
+    font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", sans-serif; }
   body { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+
+  /* 말랑한 젤리 버튼: 누르면 납작해졌다가 통통 튀며 돌아온다 */
+  .px-btn { border: 2px solid var(--line); border-radius: var(--r); box-shadow: 0 4px 0 var(--shadow); font-weight: 700;
+    transition: transform .35s var(--jelly), box-shadow .35s var(--jelly); }
+  .px-btn:active { transform: translateY(3px) scale(1.04, .9); box-shadow: 0 1px 0 var(--shadow); transition-duration: .06s; }
+  @keyframes jelly-pop { 0% { transform: scale(.7); } 45% { transform: scale(1.15, .88); } 70% { transform: scale(.94, 1.06); } 100% { transform: scale(1); } }
 
   #game { position: relative; flex: 1; min-height: 0; touch-action: none; user-select: none; -webkit-user-select: none; }
-  #game canvas { display: block; width: 100%; height: 100%; }
+  #game canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
   #hud { position: absolute; top: calc(env(safe-area-inset-top) + 10px); left: 12px; right: 12px;
     display: flex; gap: 8px; flex-wrap: wrap; pointer-events: none; }
-  .chip { background: rgba(255,255,255,.75); color: #1d2433; border-radius: 999px; padding: 4px 10px;
-    font-size: 13px; font-weight: 600; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
-  #hint { position: absolute; bottom: 14px; left: 0; right: 0; text-align: center; font-size: 13px;
-    color: rgba(29,36,51,.55); pointer-events: none; transition: opacity .4s; }
+  /* 하늘 위 칩은 테마와 상관없이 크림색 + 코코아 */
+  .chip { background: #fffaf0; color: #4a2a1f; border: 2px solid #6f3d2e; border-radius: 999px; box-shadow: 0 3px 0 #6f3d2e;
+    padding: 3px 10px; font-size: 13px; font-weight: 700; }
+  #setBtn { pointer-events: auto; margin-left: auto; transition: transform .35s var(--jelly), box-shadow .35s var(--jelly); }
+  #setBtn:active { transform: translateY(2px) scale(1.06, .88); box-shadow: 0 1px 0 #6f3d2e; transition-duration: .06s; }
+  #hint { position: absolute; bottom: 34px; left: 0; right: 0; text-align: center; font-size: 13px;
+    color: #4a2a1f; opacity: .7; pointer-events: none; transition: opacity .4s; }
 
-  #panel { background: var(--panel); border-top: 1px solid var(--line); display: flex; flex-direction: column;
-    max-height: 42dvh; padding-bottom: env(safe-area-inset-bottom); transition: max-height .25s ease; }
-  #panel.collapsed { max-height: 52px; }
+  #panel { background: var(--panel); border-top: 2px solid var(--line); border-radius: 22px 22px 0 0; margin-top: -22px;
+    position: relative; display: flex; flex-direction: column;
+    max-height: 42dvh; padding-bottom: env(safe-area-inset-bottom); transition: max-height .25s steps(5); }
+  #panel.collapsed { max-height: 50px; }
   #panelHead { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 8px;
-    font-weight: 700; font-size: 15px; cursor: pointer; }
-  #panelHead span { color: var(--muted); font-weight: 500; font-size: 13px; }
-  #addForm { display: flex; gap: 8px; padding: 0 16px 8px; }
-  #addForm input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 10px 12px; border-radius: 10px;
-    border: 1px solid var(--line); background: var(--bg); color: var(--text); outline: none; }
-  #addForm input:focus { border-color: var(--accent); }
-  #addForm button { font: inherit; font-weight: 600; border: 0; border-radius: 10px; padding: 0 16px;
-    background: var(--accent); color: var(--on-accent); }
-  #list { list-style: none; margin: 0; padding: 0 8px 12px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  #list li { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-bottom: 1px solid var(--line); }
+    font-weight: 700; font-size: 14px; cursor: pointer; }
+  #panelHead span { color: var(--muted); font-weight: 400; font-size: 13px; }
+  #addForm { display: flex; gap: 10px; padding: 2px 16px 12px; }
+  #addForm input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 8px 10px;
+    border: 2px solid var(--line); border-radius: var(--r); background: var(--bg); color: var(--text); outline: none; }
+  #addForm input::placeholder { color: var(--muted); }
+  #addForm input:focus { box-shadow: 0 3px 0 var(--shadow); }
+  #addForm button { padding: 0 14px; background: var(--accent); color: var(--on-accent); font-size: 14px; }
+  #list { list-style: none; margin: 0; padding: 0 16px 12px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  #list li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 2px dashed var(--soft); }
   #list li:last-child { border-bottom: 0; }
-  #list input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
-  #list .txt { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-  #list li.done .txt { color: var(--done); text-decoration: line-through; }
-  #list .del { border: 0; background: none; color: var(--muted); font-size: 18px; padding: 4px 8px; }
-  #empty { color: var(--muted); font-size: 14px; padding: 8px 16px 16px; }
+  #list input[type=checkbox] { appearance: none; -webkit-appearance: none; margin: 0; flex: none;
+    width: 22px; height: 22px; border: 2px solid var(--line); border-radius: 7px; background: var(--bg); cursor: pointer; }
+  #list input[type=checkbox]:checked { background: var(--accent) var(--check) center / 14px 14px no-repeat; image-rendering: pixelated;
+    animation: jelly-pop .45s var(--jelly); }
+  #list .txt { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 15px; line-height: 1.4; }
+  #list li.done .txt { color: var(--done); text-decoration: line-through; text-decoration-thickness: 2px; }
+  #list .del { border: 0; background: none; color: var(--muted); font-size: 16px; padding: 2px 6px; }
+  #empty { color: var(--muted); font-size: 13px; padding: 4px 16px 16px; }
+
+  /* 대사 설정 시트 */
+  #settings { position: fixed; inset: 0; z-index: 10; background: rgba(30,20,16,.45);
+    display: flex; align-items: flex-end; justify-content: center; }
+  #settings[hidden] { display: none; }
+  #settings .sheet { background: var(--panel); color: var(--text); width: 100%; max-width: 520px; max-height: 88dvh;
+    border: 2px solid var(--line); border-bottom: 0; border-radius: 22px 22px 0 0; box-shadow: 0 -4px 0 var(--shadow);
+    animation: sheet-up .4s var(--jelly);
+    display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom); }
+  @keyframes sheet-up { from { transform: translateY(40%); } to { transform: none; } }
+  #settings header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 4px; }
+  #settings h2 { margin: 0; font-size: 14px; }
+  #settings .help { margin: 0; padding: 4px 16px 10px; color: var(--muted); font-size: 13px; }
+  #setList { overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 16px 8px; }
+  .set-item { padding: 8px 0; }
+  .set-item label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .set-item textarea { width: 100%; font: inherit; font-size: 16px; line-height: 1.4; padding: 8px 10px; resize: vertical;
+    border: 2px solid var(--line); border-radius: var(--r); background: var(--bg); color: var(--text); outline: none; }
+  .set-item textarea:focus { box-shadow: 0 3px 0 var(--shadow); }
+  .set-item textarea::placeholder { color: var(--muted); }
+  #settings footer { display: flex; gap: 10px; padding: 12px 16px 14px; border-top: 2px solid var(--line); }
+  #settings footer button { padding: 10px 14px; font-size: 14px; }
+  #setReset, #setClose { background: var(--panel); color: var(--text); }
+  #setClose { padding: 4px 12px; font-size: 13px; border-radius: 999px; box-shadow: 0 3px 0 var(--shadow); }
+  #setSave { flex: 1; background: var(--accent); color: var(--on-accent); }
 </style>
 </head>
 <body>
@@ -79,6 +126,7 @@
       <div class="chip" id="hudClouds">☁️ 0</div>
       <div class="chip" id="hudHeight">0m</div>
       <div class="chip" id="hudBest">최고 0m</div>
+      <button class="chip" id="setBtn" type="button">💬 대사</button>
     </div>
     <div id="hint">화면을 연타해서 천사를 날려보세요</div>
   </div>
@@ -87,11 +135,20 @@
     <div id="panelHead"><div id="listTitle">오늘 할 일</div><span id="panelToggle">접기 ▾</span></div>
     <form id="addForm" autocomplete="off">
       <input id="newTodo" placeholder="할 일 추가" maxlength="60" enterkeyhint="done">
-      <button type="submit" id="addBtn">추가</button>
+      <button type="submit" id="addBtn" class="px-btn">추가</button>
     </form>
     <ul id="list"></ul>
     <div id="empty">할 일을 완료하면 구름이 하나씩 생겨요.</div>
   </section>
+
+  <div id="settings" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+      <header><h2 id="setTitle"></h2><button id="setClose" type="button" class="px-btn"></button></header>
+      <p class="help" id="setHelp"></p>
+      <div id="setList"></div>
+      <footer><button id="setReset" type="button" class="px-btn"></button><button id="setSave" type="button" class="px-btn"></button></footer>
+    </div>
+  </div>
 
 <script src="lines.js"></script>
 <script>
@@ -174,7 +231,7 @@
       t.doneAt = Date.now();
       state.totalClouds++;
       cloudBorn.set(id, performance.now());
-      say(L.speech.cloudMade, 2000);
+      say('cloudMade', 2000);
     } else {
       delete t.doneDay; delete t.doneAt;
       state.totalClouds = Math.max(0, state.totalClouds - 1);
@@ -207,7 +264,7 @@
   });
 
   // ---------- 구름 ----------
-  const CLOUD_GAP = 110;    // 구름 사이 높이 (천사 키보다 커야 위 구름에 머리가 안 가림)
+  const CLOUD_GAP = 140;    // 구름 사이 높이 (천사 키보다 커야 위 구름에 머리가 안 가림)
   const CLOUD_BASE = 72;    // 첫 구름 높이
   const rand = i => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 
@@ -218,8 +275,7 @@
       .map((t, i) => ({
         id: t.id,
         top: CLOUD_BASE + i * CLOUD_GAP,
-        dx: (rand(i) - 0.5) * 70,          // 중앙에서 살짝 엇갈리게
-        w: 120 + rand(i + 50) * 50,
+        dx: (rand(i) - 0.5) * 60,          // 중앙에서 살짝 엇갈리게
       }));
   }
 
@@ -230,12 +286,19 @@
   const $hint = document.getElementById('hint');
   const $hud = document.getElementById('hud');
   let W = 0, H = 0, dpr = 1;
+  // 픽셀 그림 1칸의 화면 크기. 기기 픽셀 정수배로 맞춰야 칸이 고르게 또렷하다
+  let PX = 1.5;
+  const snap = v => Math.round(v * dpr) / dpr;
+  const angelH = () => 64 * PX;   // 천사 그림은 64칸 (파일은 128px = 칸당 2px)
+  const PIXEL_SCALE = 1.6;        // 칸 크기 (css px). 키우면 천사·구름이 같이 커짐
 
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 3);
+    PX = Math.max(1, Math.round(PIXEL_SCALE * dpr)) / dpr;
     W = $game.clientWidth; H = $game.clientHeight;
     cv.width = W * dpr; cv.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.imageSmoothingEnabled = false;
   }
   new ResizeObserver(resize).observe($game);
   resize();
@@ -250,12 +313,17 @@
   let bubble = { text: '', until: 0 };
   let tappedOnce = false;
 
-  function say(lines, ms = 1400) {
-    const text = pick(lines);
+  // 사용자가 설정에서 바꾼 대사가 있으면 그것, 없으면 lines.js 기본 대사
+  const lineFor = key => {
+    const custom = state.customSpeech && state.customSpeech[key];
+    return custom && custom.length ? custom : (L.speech[key] || []);
+  };
+  function say(key, ms = 1400) { sayText(pick(lineFor(key)), ms); }
+  function sayText(text, ms = 1400) {
     // 긴 문장은 읽을 시간만큼 더 띄운다
-    if (text) bubble = { text, until: performance.now() + Math.max(ms, text.length * 110) };
+    if (text) bubble = { text, born: performance.now(), until: performance.now() + Math.max(ms, text.length * 110) };
   }
-  say(L.speech.start, 2500);
+  say('start', 2500);
 
   function tap() {
     const now = performance.now();
@@ -266,7 +334,7 @@
   }
   $game.addEventListener('pointerdown', e => { e.preventDefault(); tap(); });
   window.addEventListener('keydown', e => {
-    if (e.code === 'Space' && document.activeElement !== $input) { e.preventDefault(); tap(); }
+    if (e.code === 'Space' && !/INPUT|TEXTAREA/.test(document.activeElement.tagName) && $settings.hidden) { e.preventDefault(); tap(); }
   });
 
   function setMood(m, now) {
@@ -274,11 +342,11 @@
     const prev = angel.mood;
     angel.mood = m;
     angel.moodSince = now;
-    if (m === 'rising' && (prev === 'idle' || prev === 'rest')) say(L.speech.rising, 900);
-    if (m === 'fast') say(L.speech.fast, 1200);
-    if (m === 'falling') say(L.speech.falling, 1600);
-    if (m === 'rest') say(angel.h > CLOUD_BASE + CLOUD_GAP * 6 ? L.speech.restHigh : L.speech.rest, 1500);
-    if (m === 'idle' && prev === 'falling') say(L.speech.ground, 1500);
+    if (m === 'rising' && (prev === 'idle' || prev === 'rest')) say('rising', 900);
+    if (m === 'fast') say('fast', 1200);
+    if (m === 'falling') say('falling', 1600);
+    if (m === 'rest') say(angel.h > CLOUD_BASE + CLOUD_GAP * 6 ? 'restHigh' : 'rest', 1500);
+    if (m === 'idle' && prev === 'falling') say('ground', 1500);
   }
 
   function physics(dt, clouds) {
@@ -328,7 +396,7 @@
     // 200m, 400m… 를 올라가며 넘을 때마다 한 번씩. 착지하면 그 높이부터 다시 센다
     const stage = Math.floor(m / MILESTONE_M);
     if (angel.on) passedStage = stage;
-    else if (angel.vy > 0 && stage > passedStage) { passedStage = stage; say(L.speech.milestone, 1800); }
+    else if (angel.vy > 0 && stage > passedStage) { passedStage = stage; say('milestone', 1800); }
 
     // 카메라: 천사+말풍선 덩어리가 보이는 영역(위쪽 칩 아래 ~ 지면)의 중앙보다 살짝 위에 오도록.
     // 할 일 목록을 펼쳐 게임 영역이 작아져도 같은 비율로 맞춰진다.
@@ -336,7 +404,7 @@
     const view = H - GROUND_PX;
     const hudBottom = $hud.getBoundingClientRect().bottom - $game.getBoundingClientRect().top;
     const avail = view - hudBottom;          // 위쪽 칩에 가리지 않는 높이
-    const block = ANGEL_HEIGHT + 40;         // 천사 + 말풍선
+    const block = angelH() + 44;             // 천사 + 말풍선
     const feet = Math.max(0, (avail - block) / 2 + avail * 0.08); // 화면 아래에서 천사 발까지
     // 속도만큼 미리 앞서가서 카메라가 뒤처지는 만큼을 상쇄
     const target = Math.max(0, angel.h + angel.vy / CAM_SPEED - feet);
@@ -356,49 +424,102 @@
   // 화면 좌표: 지면 상단 = H - GROUND_PX, 높이 h는 위로
   const sy = h => H - GROUND_PX - (h - camH);
 
-  function draw(now, clouds) {
-    // 하늘: 높이 올라갈수록 진해짐
-    const k = Math.min(1, camH / 3000);
-    const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, mix([170, 205, 255], [40, 50, 110], k));
-    g.addColorStop(1, mix([230, 242, 255], [120, 140, 210], k));
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, W, H);
+  const TEXT_FONT = '600 13px -apple-system, "Apple SD Gothic Neo", sans-serif';  // 글자는 픽셀 폰트가 아닌 기본 글꼴
+  const COCOA = '#6f3d2e', IVORY = '#fffaf0', BUTTER = '#ffe6a3';
+  // 배경 장식: 높이 구간마다 고정된 자리에 (월드 좌표, 천천히 움직이는 원근감)
+  const DECO_PARALLAX = 0.45;
+  const decoAt = i => ({
+    y: 260 + i * 330 + rand(i + 300) * 120,      // 카메라 기준이 아닌 배경 좌표
+    x: rand(i + 400),                             // 화면 폭 비율
+    kind: i % 3,
+  });
 
-    // 높이 눈금 (10m 마다)
-    ctx.fillStyle = 'rgba(255,255,255,.55)';
-    ctx.font = '11px -apple-system, sans-serif';
-    ctx.textAlign = 'left';
-    const startTick = Math.floor(camH / 100) * 100;
-    for (let h = startTick; h < camH + H; h += 100) {
-      if (h <= 0) continue;
-      const y = sy(h);
-      ctx.fillRect(0, y, 10, 1);
-      ctx.fillText(`${h / 10}m`, 14, y + 4);
+  function draw(now, clouds) {
+    // 하늘: 높이 올라갈수록 밤하늘로. 픽셀 느낌으로 계단식 띠
+    const k = Math.min(1, camH / 3000);
+    const top = [mixN([168, 206, 255], [38, 44, 92], k), mixN([233, 244, 255], [104, 120, 196], k)];
+    const BANDS = 10, bandH = Math.ceil(H / BANDS);
+    for (let b = 0; b < BANDS; b++) {
+      const t = b / (BANDS - 1);
+      ctx.fillStyle = `rgb(${top[0].map((v, i) => Math.round(v + (top[1][i] - v) * t)).join(',')})`;
+      ctx.fillRect(0, b * bandH, W, bandH + 1);
     }
 
-    // 오늘 최고 높이 선
-    const best = (state.bestByDay[todayKey()] || 0) * 10;
-    if (best > 0) {
-      const y = sy(best);
-      if (y > -10 && y < H) {
-        ctx.strokeStyle = 'rgba(255,200,80,.8)';
-        ctx.setLineDash([6, 6]);
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle = 'rgba(200,140,20,.9)';
-        ctx.textAlign = 'right';
-        ctx.fillText(fmt(L.ui.bestLine, best / 10), W - 10, y - 5);
+    // 해 (낮은 하늘), 달과 별 (높은 하늘)
+    const deco = art.deco;
+    if (deco) {
+      const sz = 32 * PX;  // 해·달·별 그림은 32칸
+      if (k < 0.6 && deco.sun) {
+        ctx.globalAlpha = 1 - k / 0.6;
+        ctx.drawImage(deco.sun, snap(W - sz - 16), snap(54 + camH * 0.05), sz, sz);
+        ctx.globalAlpha = 1;
+      }
+      if (k > 0.3) {
+        ctx.globalAlpha = Math.min(1, (k - 0.3) / 0.4);
+        if (deco.moon) ctx.drawImage(deco.moon, snap(W - sz - 20), snap(60), sz, sz);
+        for (let i = 0; i < 14; i++) {
+          const img = i % 2 ? deco.star1 : deco.star2;
+          if (!img) continue;
+          const ss = (i % 3 ? 16 : 24) * PX;
+          const yy = ((rand(i + 900) * (H + 200) + camH * 0.15) % (H + 200)) - 100;
+          ctx.drawImage(img, snap(rand(i + 800) * (W - ss)), snap(yy), ss, ss);
+        }
+        ctx.globalAlpha = 1;
+      }
+      // 배경 구름: 천천히 지나감
+      const clouds3 = [deco.cloud1, deco.cloud2, deco.cloud3];
+      const camB = camH * DECO_PARALLAX;
+      const first = Math.max(0, Math.floor((camB - 400) / 330));
+      for (let i = first; i < first + 6; i++) {
+        const d = decoAt(i), img = clouds3[d.kind];
+        if (!img) continue;
+        const cw = 64 * PX * 0.75, ch = 48 * PX * 0.75;
+        const y = H - GROUND_PX - (d.y - camB);
+        if (y < -ch || y > H) continue;
+        ctx.globalAlpha = 0.85 * (1 - k * 0.6);
+        ctx.drawImage(img, snap(d.x * (W - cw)), snap(y), cw, ch);
+        ctx.globalAlpha = 1;
       }
     }
 
-    // 지면
-    const gy = sy(0);
+    // 높이 눈금 (10m 마다)
+    ctx.font = TEXT_FONT;
+    ctx.textAlign = 'left';
+    const tickColor = k > 0.5 ? 'rgba(255,250,240,.75)' : 'rgba(111,61,46,.45)';
+    ctx.fillStyle = tickColor;
+    const startTick = Math.floor(camH / 100) * 100;
+    for (let h = startTick; h < camH + H; h += 100) {
+      if (h <= 0) continue;
+      const y = snap(sy(h));
+      ctx.fillRect(0, y, 8, 2);
+      ctx.fillText(`${h / 10}m`, 12, y + 5);
+    }
+
+    // 오늘 최고 높이 선 (네모 점선)
+    const best = (state.bestByDay[todayKey()] || 0) * 10;
+    if (best > 0) {
+      const y = snap(sy(best));
+      if (y > -10 && y < H) {
+        ctx.fillStyle = '#f5b94a';
+        for (let x = 0; x < W; x += 12) ctx.fillRect(x, y, 6, 2);
+        ctx.fillStyle = k > 0.5 ? BUTTER : COCOA;
+        ctx.textAlign = 'right';
+        ctx.fillText(fmt(L.ui.bestLine, best / 10), W - 8, y - 6);
+      }
+    }
+
+    // 지면: 픽셀 잔디
+    const gy = snap(sy(0));
     if (gy < H + 10) {
-      ctx.fillStyle = '#9fd38a';
+      const p = PX * 2;
+      ctx.fillStyle = '#a8d98f';
       ctx.fillRect(0, gy, W, H - gy + 40);
-      ctx.fillStyle = '#86c070';
-      ctx.fillRect(0, gy, W, 6);
+      ctx.fillStyle = '#7fbf6a';
+      ctx.fillRect(0, gy, W, p * 2);
+      for (let x = 0, i = 0; x < W; x += p * 3, i++) {
+        if (rand(i + 1200) > 0.5) ctx.fillRect(snap(x), gy - p, p, p);   // 풀잎
+        if (rand(i + 1500) > 0.75) { ctx.fillStyle = '#8fcb78'; ctx.fillRect(snap(x), gy + p * (3 + (i % 4)), p * 2, p); ctx.fillStyle = '#7fbf6a'; }
+      }
     }
 
     // 구름
@@ -413,7 +534,7 @@
         if (t < 1) s = 1 + Math.sin(t * Math.PI) * 0.25 - (1 - t) * 0.6; else cloudBorn.delete(c.id);
         s = Math.max(0.05, s);
       }
-      drawCloud(cx + c.dx, y, c.w * s, angel.on === c.id);
+      drawCloud(cx + c.dx, y, s, angel.on === c.id);
     }
 
     drawAngel(cx, sy(angel.h), now);
@@ -430,23 +551,38 @@
     rest: 'art/angel-rest.png',       // 구름 위에서 쉬는 중
     cloud: 'art/cloud.png',
   };
-  const ANGEL_HEIGHT = 100;     // 화면에 그릴 천사 키 (px). 폭은 그림 비율대로
-  const ANGEL_ANCHOR_X = 0.4;   // 그림 폭 중 엉덩이 중심 위치 (날개가 오른쪽으로 삐져나와 있어서 0.5보다 왼쪽)
-  const CLOUD_SINK = 0.22;      // 구름 그림 윗부분 중 천사 엉덩이가 파묻히는 비율
-  const art = {};
+  // 배경 장식 (art/deco/)
+  const DECO = {
+    cloud1: 'art/deco/01-cloud-top-left-pixel.png',
+    cloud2: 'art/deco/02-cloud-bottom-left-pixel.png',
+    cloud3: 'art/deco/03-cloud-bottom-right-pixel.png',
+    star1: 'art/deco/04-star-top-pixel.png',
+    star2: 'art/deco/05-star-center-pixel.png',
+    moon: 'art/deco/06-moon-pixel.png',
+    sun: 'art/deco/07-sun-pixel.png',
+  };
+  const ANGEL_ANCHOR_X = 0.48;  // 그림 폭 중 엉덩이 중심 위치
+  const CLOUD_SINK = 0.375;     // 구름 그림 위에서부터 천사가 앉는 선까지의 비율 (윗면 44px + 살짝 파묻힘 / 128px)
+  const art = { deco: {} };
   for (const [k, src] of Object.entries(ART)) {
     const img = new Image();
     img.onload = () => { art[k] = img; };
     img.src = src;
   }
+  for (const [k, src] of Object.entries(DECO)) {
+    const img = new Image();
+    img.onload = () => { art.deco[k] = img; };
+    img.src = src;
+  }
 
-  function drawCloud(x, top, w, active) {
+  function drawCloud(x, top, scale, active) {
     if (art.cloud) {
-      const ih = w * art.cloud.naturalHeight / art.cloud.naturalWidth;
-      ctx.drawImage(art.cloud, x - w / 2, top - ih * CLOUD_SINK, w, ih);
+      // 구름 그림은 128×64칸. 생길 때만 잠깐 크기가 바뀌고 평소엔 칸 크기 그대로
+      const w = 128 * PX * scale, ih = 64 * PX * scale;
+      ctx.drawImage(art.cloud, snap(x - w / 2), snap(top - ih * CLOUD_SINK), w, ih);
       return;
     }
-    const h = w * 0.32;
+    const w = 140 * scale, h = w * 0.32;
     ctx.save();
     ctx.translate(x, top + h * 0.45);
     ctx.fillStyle = active ? '#ffffff' : 'rgba(255,255,255,.93)';
@@ -466,10 +602,10 @@
     const mood = angel.mood;
     const img = art[mood] || art.idle;
     if (img) {
-      const w = ANGEL_HEIGHT * img.naturalWidth / img.naturalHeight;
-      const bob = angel.on ? 0 : Math.sin(angel.flap) * 2;
-      ctx.drawImage(img, x - w * ANGEL_ANCHOR_X, footY - ANGEL_HEIGHT + bob, w, ANGEL_HEIGHT);
-      drawBubble(x, footY - ANGEL_HEIGHT - 16, now);
+      const h = angelH(), w = h * img.naturalWidth / img.naturalHeight;
+      const bob = angel.on ? 0 : Math.round(Math.sin(angel.flap)) * PX;   // 한 칸씩 들썩
+      ctx.drawImage(img, snap(x - w * ANGEL_ANCHOR_X), snap(footY - h + bob), w, h);
+      drawBubble(x, footY - h - 18, now);
       return;
     }
     const flap = Math.sin(angel.flap) * (angel.on ? 0.1 : 0.6);
@@ -545,17 +681,66 @@
   }
 
   function drawBubble(x, by, now) {
-    if (now < bubble.until) {
-      ctx.font = '600 13px -apple-system, "Apple SD Gothic Neo", sans-serif';
-      const tw = ctx.measureText(bubble.text).width;
-      const bx = Math.min(W - tw / 2 - 16, Math.max(tw / 2 + 16, x + 40));
-      ctx.fillStyle = 'rgba(255,255,255,.92)';
-      roundRect(bx - tw / 2 - 10, by - 14, tw + 20, 26, 13);
-      ctx.fill();
-      ctx.fillStyle = '#1d2433';
-      ctx.textAlign = 'center';
-      ctx.fillText(bubble.text, bx, by + 4);
+    if (now >= bubble.until) return;
+    ctx.font = TEXT_FONT;
+    // 화면 폭을 넘으면 띄어쓰기에서 줄바꿈, 한 단어가 너무 길면 글자 단위로 (줄이 늘면 말풍선이 위로 자란다)
+    const maxW = Math.min(240, W - 56);
+    const rows = [''];
+    const fits = t => ctx.measureText(t).width <= maxW;
+    for (const word of bubble.text.split(' ')) {
+      const cur = rows[rows.length - 1];
+      const joined = cur ? cur + ' ' + word : word;
+      if (fits(joined)) { rows[rows.length - 1] = joined; continue; }
+      if (cur) rows.push('');
+      for (const ch of word) {
+        const r = rows[rows.length - 1];
+        if (fits(r + ch) || !r) rows[rows.length - 1] = r + ch; else rows.push(ch);
+      }
     }
+    const tw = Math.ceil(Math.max(...rows.map(r => ctx.measureText(r).width)));
+    const LH = 16, PADX = 12, PADY = 9, R = 13;
+    const bw = tw + PADX * 2, bh = LH * rows.length + PADY * 2 - 4;
+    const bx = Math.min(W - bw - 10, Math.max(10, x + 40 - bw / 2));
+    const top = by + 8 - bh;
+    const tipX = Math.min(bx + bw - 18, Math.max(bx + 18, x));   // 꼬리 끝은 천사 쪽
+
+    // 젤리처럼: 톡 튀어나와서 몇 번 출렁이다 멈춘다 (꼬리 끝을 기준으로)
+    const t = (now - (bubble.born || 0)) / 1000;
+    const wob = Math.sin(t * 24) * Math.exp(-7 * t) * 0.16;
+    const pop = Math.min(1, 0.55 + t * 7);
+    ctx.save();
+    ctx.translate(tipX, top + bh + 7);
+    ctx.scale(pop * (1 + wob), pop * (1 - wob));
+    ctx.translate(-tipX, -(top + bh + 7));
+
+    const shape = () => {
+      roundRect(bx, top, bw, bh, R);
+      // 통통한 꼬리
+      ctx.moveTo(tipX - 9, top + bh - 2);
+      ctx.quadraticCurveTo(tipX - 3, top + bh + 3, tipX + 1, top + bh + 8);
+      ctx.quadraticCurveTo(tipX + 4, top + bh + 2, tipX + 9, top + bh - 2);
+      ctx.closePath();
+    };
+    // 테두리를 두껍게 먼저 그리고 안을 채우면 몸통과 꼬리 사이 이음선 없이 바깥 윤곽만 남는다
+    shape();
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = COCOA;
+    ctx.stroke();
+    ctx.fillStyle = IVORY;
+    ctx.fill();
+    // 젤리 광택
+    ctx.fillStyle = 'rgba(255,255,255,.9)';
+    roundRect(bx + 5, top + 4, Math.min(26, bw * 0.3), 4, 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,230,163,.55)';
+    roundRect(bx + 4, top + bh - 7, bw - 8, 3, 1.5);
+    ctx.fill();
+
+    ctx.fillStyle = '#4a2a1f';
+    ctx.textAlign = 'left';
+    rows.forEach((r, i) => ctx.fillText(r, Math.round(bx + PADX), Math.round(top + PADY + 10 + LH * i)));
+    ctx.restore();
   }
 
   function roundRect(x, y, w, h, r) {
@@ -568,7 +753,8 @@
     ctx.closePath();
   }
 
-  const mix = (a, b, t) => `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',')})`;
+  const mix = (a, b, t) => `rgb(${mixN(a, b, t).join(',')})`;
+  const mixN = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
 
   // ---------- HUD ----------
   const $c = document.getElementById('hudClouds');
@@ -580,6 +766,62 @@
     $h.textContent = fmt(L.ui.height, Math.floor(angel.h / 10));
     $b.textContent = fmt(L.ui.best, state.bestByDay[todayKey()] || 0);
   }
+
+  // ---------- 대사 설정 ----------
+  const MAX_LINE = 30;
+  const $settings = document.getElementById('settings');
+  const $setList = document.getElementById('setList');
+  document.getElementById('setTitle').textContent = L.ui.settingsTitle;
+  document.getElementById('setHelp').textContent = fmt(L.ui.settingsHelp, MAX_LINE);
+  document.getElementById('setClose').textContent = L.ui.settingsClose;
+  document.getElementById('setReset').textContent = L.ui.settingsReset;
+  document.getElementById('setSave').textContent = L.ui.settingsSave;
+  const $setBtn = document.getElementById('setBtn');
+  $setBtn.textContent = L.ui.settingsButton;
+  $setBtn.addEventListener('pointerdown', e => e.stopPropagation()); // 게임 탭으로 세지 않게
+
+  function openSettings() {
+    $setList.innerHTML = '';
+    for (const [key, label] of Object.entries(L.speechLabels)) {
+      const item = document.createElement('div');
+      item.className = 'set-item';
+      const id = 'set-' + key;
+      const lab = document.createElement('label');
+      lab.htmlFor = id;
+      lab.textContent = label;
+      const ta = document.createElement('textarea');
+      ta.id = id;
+      ta.dataset.key = key;
+      ta.rows = 2;
+      ta.placeholder = (L.speech[key] || []).join('\n');
+      ta.value = ((state.customSpeech || {})[key] || []).join('\n');
+      item.append(lab, ta);
+      $setList.append(item);
+    }
+    $settings.hidden = false;
+  }
+  const closeSettings = () => { $settings.hidden = true; };
+
+  $setBtn.addEventListener('click', openSettings);
+  document.getElementById('setClose').addEventListener('click', closeSettings);
+  $settings.addEventListener('click', e => { if (e.target === $settings) closeSettings(); });
+  document.getElementById('setSave').addEventListener('click', () => {
+    const custom = {};
+    for (const ta of $setList.querySelectorAll('textarea')) {
+      const lines = ta.value.split('\n').map(t => t.trim().slice(0, MAX_LINE)).filter(Boolean);
+      if (lines.length) custom[ta.dataset.key] = lines;
+    }
+    state.customSpeech = custom;
+    save();
+    closeSettings();
+    sayText(L.ui.settingsSaved, 1500);
+  });
+  document.getElementById('setReset').addEventListener('click', () => {
+    if (!confirm(L.ui.settingsResetConfirm)) return;
+    delete state.customSpeech;
+    save();
+    openSettings();
+  });
 
   renderList();
   requestAnimationFrame(t => { last = t; step(t); });
