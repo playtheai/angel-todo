@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#000000" />
-  <meta name="description" content="세 장의 포토 카드로 만나는 오늘의 위시 운세." />
-  <title>WISH FORTUNE — 오늘의 세 장</title>
+  <meta name="description" content="두 장의 포토 카드로 만나는 오늘의 위시 운세." />
+  <title>WISH FORTUNE — 오늘의 두 장</title>
   <style>
     :root { --black:#000; --green:#a6ff00; --green-2:#38ff7a; --ivory:#f3f8e9; --ease:cubic-bezier(.2,.84,.28,1); }
     * { box-sizing:border-box; }
@@ -60,7 +60,7 @@
     .leaf { position:absolute; width:34px; height:34px; border-radius:50% 50% 12% 50%; background:linear-gradient(145deg,#d5ff58,#5dfb5f); box-shadow:inset 5px 5px 9px rgba(255,255,255,.34),inset -5px -5px 11px rgba(0,69,23,.32); transition:transform .9s var(--ease),opacity .6s ease; }
     .leaf:nth-child(1) { left:2px; top:2px; } .leaf:nth-child(2) { right:2px; top:2px; transform:rotate(90deg); } .leaf:nth-child(3) { left:2px; bottom:2px; transform:rotate(-90deg); } .leaf:nth-child(4) { right:2px; bottom:2px; transform:rotate(180deg); }
     .pack-hit { position:absolute; z-index:10; inset:0; border:0; border-radius:4px; background:transparent; cursor:pointer; }
-    .pack-hit:focus-visible,.again:focus-visible,.fortune-card:focus-visible { outline:2px solid var(--green); outline-offset:5px; }
+    .pack-hit:focus-visible,.action-button:focus-visible,.fortune-card:focus-visible { outline:2px solid var(--green); outline-offset:5px; }
     .open-label { position:absolute; z-index:32; top:calc(100% + 23px); left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:10px; white-space:nowrap; color:var(--green); font:700 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.16em; text-transform:uppercase; pointer-events:none; }
     .open-label::before,.open-label::after { content:"✦"; font-size:8px; animation:blink 1.2s ease-in-out infinite alternate; }
     @keyframes blink { to { opacity:.25; transform:scale(.7); } }
@@ -71,10 +71,11 @@
     .opened .burst { animation:burst 1s ease-out .18s; }
     @keyframes burst { 0% { opacity:0; transform:scale(.2); } 20% { opacity:.9; } 100% { opacity:0; transform:scale(5); } }
     .cards { position:absolute; inset:0; z-index:20; display:grid; place-items:center; pointer-events:none; transform-style:preserve-3d; }
-    .fortune-card { --x:0px; --r:0deg; --delay:0s; --mx:50%; --my:50%; position:absolute; width:clamp(225px,26vw,290px); min-height:355px; padding:9px; border:1px solid rgba(166,255,0,.6); border-radius:19px; color:var(--ivory); background:linear-gradient(145deg,rgba(16,48,24,.98),rgba(1,8,3,.99)); box-shadow:0 26px 65px rgba(0,0,0,.8),inset 0 0 0 1px rgba(255,255,255,.05); opacity:0; transform:translate3d(0,100px,-200px) rotateY(80deg) scale(.5); transform-style:preserve-3d; will-change:transform; cursor:default; overflow:hidden; }
+    .fortune-card { --x:0px; --r:0deg; --delay:0s; --mx:50%; --my:50%; position:absolute; width:clamp(225px,26vw,290px); min-height:355px; padding:9px; border:1px solid rgba(166,255,0,.6); border-radius:19px; color:var(--ivory); background:linear-gradient(145deg,rgba(16,48,24,.98),rgba(1,8,3,.99)); box-shadow:0 26px 65px rgba(0,0,0,.8),inset 0 0 0 1px rgba(255,255,255,.05); opacity:0; transform:translate3d(0,100px,-200px) rotateY(80deg) scale(.5); transform-style:preserve-3d; will-change:transform; cursor:pointer; overflow:hidden; transition:transform .42s var(--ease),box-shadow .42s ease; }
     .fortune-card::after { content:""; position:absolute; inset:0; pointer-events:none; opacity:.38; mix-blend-mode:screen; background:radial-gradient(circle at var(--mx) var(--my),rgba(210,255,140,.8),transparent 18%),linear-gradient(112deg,transparent 25%,rgba(68,255,111,.2) 47%,transparent 65%); }
-    .fortune-card:nth-child(1) { --x:-310px; --r:-5deg; --delay:.08s; } .fortune-card:nth-child(2) { --x:0px; --r:0deg; --delay:.2s; z-index:2; } .fortune-card:nth-child(3) { --x:310px; --r:5deg; --delay:.32s; }
+    .fortune-card:nth-child(1) { --x:-115px; --r:-5deg; --delay:.08s; } .fortune-card:nth-child(2) { --x:115px; --r:5deg; --delay:.2s; z-index:2; }
     .opened .fortune-card { pointer-events:auto; animation:cardDeal 1.05s var(--ease) calc(.4s + var(--delay)) forwards; }
+    .opened .fortune-card.selected { z-index:12; transform:translate3d(var(--x),-20px,75px) rotate(0deg) scale(1.045) !important; box-shadow:0 38px 80px rgba(0,0,0,.86),0 0 24px rgba(166,255,0,.15); }
     @keyframes cardDeal { 0% { opacity:0; transform:translate3d(0,80px,-200px) rotateY(80deg) scale(.5); } 45% { opacity:1; } 100% { opacity:1; transform:translate3d(var(--x),0,0) rotate(var(--r)) scale(1); } }
     .photo-window { position:relative; width:100%; aspect-ratio:8/5; overflow:hidden; border-radius:11px; background:#09140b; transform:translateZ(15px); }
     .photo-window img { width:100%; height:100%; display:block; object-fit:cover; object-position:top center; filter:saturate(.93) contrast(1.02); pointer-events:none; }
@@ -83,14 +84,18 @@
     .card-meta { display:flex; justify-content:space-between; align-items:center; gap:10px; }
     .member { color:var(--green); font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.18em; text-transform:uppercase; }
     .card-no { color:rgba(243,248,233,.4); font:600 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.1em; }
-    .fortune { margin:16px 0 0; font-size:clamp(18px,2.2vw,23px); font-weight:800; line-height:1.3; letter-spacing:-.04em; word-break:keep-all; }
+    .fortune { margin:16px 0 0; font-size:clamp(18px,2.2vw,23px); font-weight:800; line-height:1.3; letter-spacing:-.04em; word-break:keep-all; white-space:pre-line; }
     .lucky-item { margin-top:auto; padding-top:15px; color:rgba(243,248,233,.5); font:500 8px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.08em; text-transform:uppercase; }
     .lucky-item span { color:var(--green); }
-    .result-title { position:fixed; z-index:50; left:50%; top:max(24px,env(safe-area-inset-top)); transform:translate(-50%,-10px); opacity:0; text-align:center; pointer-events:none; transition:opacity .45s ease 1.22s,transform .45s var(--ease) 1.22s; }
-    .opened .result-title { opacity:1; transform:translate(-50%,0); }
-    .result-title strong { display:block; color:var(--green); font-size:13px; letter-spacing:-.02em; } .result-title span { display:block; margin-top:5px; color:rgba(243,248,233,.46); font:500 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.13em; text-transform:uppercase; }
-    .again { position:fixed; z-index:70; left:50%; bottom:max(21px,env(safe-area-inset-bottom)); transform:translate(-50%,18px); opacity:0; pointer-events:none; border:1px solid var(--green); border-radius:999px; padding:13px 21px; color:#000; background:var(--green); font-size:12px; font-weight:800; letter-spacing:-.02em; cursor:pointer; box-shadow:0 0 25px rgba(166,255,0,.22); transition:opacity .4s ease 1.5s,transform .4s var(--ease) 1.5s,background .2s ease; }
-    .again:hover { background:#d2ff72; } .opened .again { opacity:1; transform:translate(-50%,0); pointer-events:auto; }
+    .actions { position:fixed; z-index:70; left:50%; bottom:max(21px,env(safe-area-inset-bottom)); display:flex; gap:8px; transform:translate(-50%,18px); opacity:0; pointer-events:none; transition:opacity .4s ease 1.5s,transform .4s var(--ease) 1.5s; }
+    .opened .actions { opacity:1; transform:translate(-50%,0); pointer-events:auto; }
+    .action-button { border:1px solid var(--green); border-radius:999px; padding:13px 20px; white-space:nowrap; font-size:12px; font-weight:800; letter-spacing:-.02em; cursor:pointer; box-shadow:0 0 25px rgba(166,255,0,.16); transition:background .2s ease,color .2s ease,transform .2s ease; }
+    .action-button:hover { transform:translateY(-2px); }
+    .again { color:var(--green); background:rgba(0,0,0,.78); }
+    .again:hover { color:#000; background:var(--green); }
+    .save { color:#000; background:var(--green); }
+    .save:hover { background:#d2ff72; }
+    .save:disabled { opacity:.55; cursor:wait; transform:none; }
     .clover-rain { position:fixed; inset:0; z-index:15; overflow:hidden; pointer-events:none; }
     .clover-rain i { --x:0px; --r:0deg; --d:0s; position:absolute; left:50%; top:48%; color:var(--green); font-style:normal; font-size:15px; opacity:0; text-shadow:0 0 10px rgba(166,255,0,.7); }
     .opened .clover-rain i { animation:rain 1.55s cubic-bezier(.18,.72,.27,1) calc(.2s + var(--d)) forwards; }
@@ -100,81 +105,108 @@
     .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
     @media (max-width:820px) {
       .date { display:none; } .logo span:last-child { display:none; } .intro,.counter { display:none; } .stage { width:100vw; height:92dvh; } .pack-shell { width:min(300px,72vw); }
-      .fortune-card { width:min(31vw,175px); min-height:260px; padding:5px; border-radius:13px; } .fortune-card:nth-child(1) { --x:-32vw; --r:-3deg; } .fortune-card:nth-child(2) { --x:0px; --r:0deg; } .fortune-card:nth-child(3) { --x:32vw; --r:3deg; }
+      .fortune-card { width:min(42vw,210px); min-height:285px; padding:6px; border-radius:14px; } .fortune-card:nth-child(1) { --x:calc(-1 * clamp(65px,12vw,92px)); --r:-4deg; } .fortune-card:nth-child(2) { --x:clamp(65px,12vw,92px); --r:4deg; }
       .photo-window { border-radius:8px; } .card-body { min-height:145px; padding:11px 7px 7px; } .member { font-size:7px; } .card-no { display:none; } .fortune { margin-top:10px; font-size:clamp(11px,3.2vw,14px); line-height:1.38; } .lucky-item { font-size:6px; padding-top:9px; } .source { display:none; }
+      .actions { gap:6px; width:calc(100vw - 28px); justify-content:center; }
+      .action-button { padding:12px 16px; font-size:11px; }
     }
-    @media (max-width:430px) { .result-title { top:max(20px,env(safe-area-inset-top)); } }
-    @media (max-height:700px) and (min-width:821px) { .stage { transform:scale(.82); } .again { bottom:12px; } }
+    @media (max-height:700px) and (min-width:821px) { .stage { transform:scale(.82); } .actions { bottom:12px; } }
     @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; animation-delay:0ms !important; transition-duration:.01ms !important; } }
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="logo"><svg class="logo-clover" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="8" cy="8" r="5"/><circle cx="16" cy="8" r="5"/><circle cx="8" cy="16" r="5"/><circle cx="16" cy="16" r="5"/></g><path d="M13 16c2 4 4 5 8 6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span>Wish Luck Club</span></div>
-    <div class="date">Lucky draw · three cards</div>
+    <div class="date">Lucky draw · two cards</div>
   </header>
   <main>
     <h1 class="sr-only">오늘의 위시 운세 카드 뽑기</h1>
-    <aside class="intro"><div class="intro-kicker">How to wish</div><p>소원 하나 생각하고 클로버 꾹. 오늘 필요한 행운 세 장, 이번엔 한 장도 안 숨겨요.</p></aside>
-    <div class="counter">18 photos · 3 wishes</div>
-    <div class="result-title" aria-hidden="true"><strong>세 장 맞습니다. 한 장도 안 숨김 🍀</strong><span>오늘 운세 풀세트 도착 완료</span></div>
+    <aside class="intro"><div class="intro-kicker">How to wish</div><p>소원 하나 생각하고 카드팩을 열어보세요. 오늘 필요한 행운 두 장이 도착합니다.</p></aside>
+    <div class="counter">18 photos · 2 wishes</div>
     <section class="stage" aria-label="위시 운세 카드 팩">
       <div class="halo" aria-hidden="true"></div><div class="burst" aria-hidden="true"></div>
-      <div class="cards" aria-live="polite"><article class="fortune-card" tabindex="0"></article><article class="fortune-card" tabindex="0"></article><article class="fortune-card" tabindex="0"></article></div>
+      <div class="cards" aria-live="polite"><article class="fortune-card" tabindex="0"></article><article class="fortune-card" tabindex="0"></article></div>
       <div class="pack-shell">
         <div class="pack">
           <div class="ripped-edge" aria-hidden="true"></div>
           <div class="tear-strip" aria-hidden="true"></div>
           <div class="bottom-seal" aria-hidden="true"></div>
           <div class="pack-copy">
-            <div class="pack-topline"><span>Lucky issue 01</span><span>3 cards. 진짜로.</span></div>
+            <div class="pack-topline"><span>Lucky issue 01</span><span>2 cards</span></div>
             <div><div class="seal" aria-hidden="true"><div class="seal-ring"></div><div class="clover"><i class="leaf"></i><i class="leaf"></i><i class="leaf"></i><i class="leaf"></i></div></div><div class="pack-title">Wish<br>Fortune<small>오늘의 위시 운세</small></div></div>
             <div class="pack-bottomline"><span>좋은 거만 들었음</span><span>Open me</span></div>
           </div>
-          <button class="pack-hit" type="button" aria-label="카드 팩 전체를 눌러 뜯고 운세 카드 세 장 열기"></button>
+          <button class="pack-hit" type="button" aria-label="카드 팩 전체를 눌러 뜯고 운세 카드 두 장 열기"></button>
         </div>
         <div class="open-label">팩 아무 데나 TAP</div>
       </div>
     </section>
     <div class="clover-rain" aria-hidden="true"></div>
-    <button class="again" type="button">별로면? 세 장 다시 뽑기 ↻</button>
+    <div class="actions"><button class="action-button save" type="button">이미지 저장하기</button><button class="action-button again" type="button">다시 뽑기</button></div>
     <div class="source"><a href="https://x.com/_rimyo/status/2103426316712472972" target="_blank" rel="noreferrer">PHOTO SOURCE · @_RIMYO ↗</a></div>
   </main>
   <script>
     const cardPool = [
-      { image:'sion-1.webp', member:'SION', fortune:'운명인가 봐! 오늘 배경화면은 내 사진으로 해', item:'새 배경화면' },
-      { image:'sion-2.webp', member:'SION', fortune:'인사 잘하는데? 인사 잘하면 행운이 찾아올지도?', item:'밝은 첫인사' },
-      { image:'sion-3.webp', member:'SION', fortune:'회색 옷은 인상이 안좋아 보여. 회색은 피하도록 해', item:'초록색 옷' },
-      { image:'riku-1.webp', member:'RIKU', fortune:'뀨? 귀여운 표정을 하면 행운이 찾아올 거야!', item:'뀨 포즈 셀카' },
+      { image:'sion-1.webp', member:'SION', fortune:'운명인가 봐!\n오늘 배경화면은 내 사진으로 해', item:'새 배경화면' },
+      { image:'sion-2.webp', member:'SION', fortune:'인사 잘하는데?\n인사 잘하면 행운이 찾아올지도?', item:'밝은 첫인사' },
+      { image:'sion-3.webp', member:'SION', fortune:'회색 옷은 인상이 안좋아 보이네\n회색은 피하도록 해', item:'초록색 옷' },
+      { image:'riku-1.webp', member:'RIKU', fortune:'뀨? 귀여운 표정을 하면\n행운이 찾아올 거야!', item:'뀨 포즈 셀카' },
       { image:'riku-2.webp', member:'RIKU', fortune:'검정 네일을 한 사람을 찾아봐', item:'검정 매니큐어' },
       { image:'riku-3.webp', member:'RIKU', fortune:'오늘은 락스타를 사랑하면 안될듯', item:'어쿠스틱 플레이리스트' },
-      { image:'yushi-1.webp', member:'YUSHI', fortune:'오늘 하루도 힘내요~ 행운 가득 ^_^', item:'응원 한마디' },
-      { image:'yushi-2.webp', member:'YUSHI', fortune:'볼하트 하면 행운이 찾아올거야 ^_^', item:'볼하트 셀카' },
-      { image:'yushi-3.webp', member:'YUSHI', fortune:'오늘 입은 복장 다시 생각해보도록', item:'갈아입을 옷 한 벌' },
-      { image:'jaehee-1.webp', member:'JAEHEE', fortune:'오늘 운동하면 딱이다! 나랑 같이 운동하고 큰 하트 만들자', item:'운동화' },
-      { image:'jaehee-2.webp', member:'JAEHEE', fortune:'지금 표정 뭐지? 웃어야 행운이 와요', item:'거울 속 미소' },
-      { image:'jaehee-3.webp', member:'JAEHEE', fortune:'우짜노... 오늘은 걍 쉬는 날 하자', item:'폭신한 이불' },
-      { image:'ryo-1.webp', member:'RYO', fortune:'윗사람에게 마자용>< 포즈를 하면 행운이 찾아올지도?', item:'마자용>< 포즈' },
-      { image:'ryo-2.webp', member:'RYO', fortune:'나는 모르는 일. 회피할 수 있는 일은 회피하자', item:'비행기 모드' },
-      { image:'ryo-3.webp', member:'RYO', fortune:'지금이 최선이야? 더 할 수 있을 거 같은데 열심히 해', item:'할 일 체크리스트' },
-      { image:'sakuya-1.webp', member:'SAKUYA', fortune:'제 입술만큼 행운이 찾아와요', item:'촉촉한 립밤' },
-      { image:'sakuya-2.webp', member:'SAKUYA', fortune:'힘들 땐 드러누워봐요', item:'폭신한 베개' },
+      { image:'yushi-1.webp', member:'YUSHI', fortune:'오늘 하루도 힘내요~\n행운 가득 ^_^', item:'응원 한마디' },
+      { image:'yushi-2.webp', member:'YUSHI', fortune:'볼하트 하면\n행운이 찾아올거야 ^_^', item:'볼하트 셀카' },
+      { image:'yushi-3.webp', member:'YUSHI', fortune:'오늘 입은 복장\n다시 생각해보도록', item:'갈아입을 옷 한 벌' },
+      { image:'jaehee-1.webp', member:'JAEHEE', fortune:'오늘 운동하면 딱이다!\n나랑 같이 운동하고 큰 하트 만들자', item:'운동화' },
+      { image:'jaehee-2.webp', member:'JAEHEE', fortune:'지금 표정 뭐지?\n웃어야 행운이 와요', item:'거울 속 미소' },
+      { image:'jaehee-3.webp', member:'JAEHEE', fortune:'우짜노...\n오늘은 걍 쉬는 날 하자', item:'폭신한 이불' },
+      { image:'ryo-1.webp', member:'RYO', fortune:'윗사람에게 마자용>< 포즈를 하면\n행운이 찾아올지도?', item:'마자용>< 포즈' },
+      { image:'ryo-2.webp', member:'RYO', fortune:'나는 모르는 일.\n회피할 수 있는 일은 회피하자', item:'비행기 모드' },
+      { image:'ryo-3.webp', member:'RYO', fortune:'지금이 최선이야?\n더 할 수 있을 거 같은데 열심히 해', item:'할 일 체크리스트' },
+      { image:'sakuya-1.webp', member:'SAKUYA', fortune:'제 입술만큼\n행운이 찾아와요', item:'촉촉한 립밤' },
+      { image:'sakuya-2.webp', member:'SAKUYA', fortune:'힘들 땐\n드러누워봐요', item:'폭신한 베개' },
       { image:'sakuya-3.webp', member:'SAKUYA', fortune:'그냥 다시 뽑자', item:'다시 뽑기 버튼' }
     ];
-    const body=document.body, packButton=document.querySelector('.pack-hit'), again=document.querySelector('.again'), cards=[...document.querySelectorAll('.fortune-card')], rain=document.querySelector('.clover-rain');
-    let opened=false, lastDraw='';
+    const body=document.body, packButton=document.querySelector('.pack-hit'), again=document.querySelector('.again'), saveButton=document.querySelector('.save'), cards=[...document.querySelectorAll('.fortune-card')], rain=document.querySelector('.clover-rain');
+    let opened=false, lastDraw='', currentDraw=[];
     function randomUnit(){ if(window.crypto?.getRandomValues){ const value=new Uint32Array(1); crypto.getRandomValues(value); return value[0]/4294967296; } return Math.random(); }
-    function drawThree(){ let result,key; do { const copy=[...cardPool]; for(let i=copy.length-1;i>0;i--){ const j=Math.floor(randomUnit()*(i+1)); [copy[i],copy[j]]=[copy[j],copy[i]]; } result=copy.slice(0,3); key=result.map(card=>card.image).join('|'); } while(key===lastDraw); lastDraw=key;
+    function drawTwo(){ let result,key; do { const copy=[...cardPool]; for(let i=copy.length-1;i>0;i--){ const j=Math.floor(randomUnit()*(i+1)); [copy[i],copy[j]]=[copy[j],copy[i]]; } result=copy.slice(0,2); if(randomUnit()<.5)result.reverse(); key=result.map(card=>card.image).join('|'); } while(key===lastDraw); lastDraw=key; currentDraw=result;
       result.forEach((item,index)=>{ cards[index].innerHTML=`<div class="photo-window"><img src="assets/wish-cards/${item.image}" alt="${item.member} 포토 카드" draggable="false"></div><div class="card-body"><div class="card-meta"><span class="member">${item.member}</span><span class="card-no">0${index+1} / TODAY</span></div><p class="fortune">${item.fortune}</p><div class="lucky-item">Lucky item · <span>${item.item}</span></div></div>`; cards[index].setAttribute('aria-label',`${item.member}. 오늘의 운세: ${item.fortune}. 행운 아이템: ${item.item}.`); });
-      document.querySelector('.cards').setAttribute('aria-label','오늘의 위시 운세 카드 세 장이 준비되었습니다.');
+      document.querySelector('.cards').setAttribute('aria-label','오늘의 위시 운세 카드 두 장이 준비되었습니다.');
     }
     for(let i=0;i<30;i++){ const piece=document.createElement('i'), angle=(i/30)*Math.PI*2, distance=160+randomUnit()*420; piece.textContent=i%3===0?'✦':'♣'; piece.style.setProperty('--x',`${Math.cos(angle)*distance}px`); piece.style.setProperty('--r',`${Math.floor(randomUnit()*900-450)}deg`); piece.style.setProperty('--d',`${(randomUnit()*.25).toFixed(2)}s`); rain.appendChild(piece); }
-    function openPack(){ if(opened)return; opened=true; body.classList.add('opened'); packButton.setAttribute('aria-expanded','true'); document.querySelector('.cards').setAttribute('aria-label','오늘의 위시 운세 카드 세 장이 공개되었습니다.'); navigator.vibrate?.([18,34,18]); }
+    function openPack(){ if(opened)return; opened=true; body.classList.add('opened'); packButton.setAttribute('aria-expanded','true'); document.querySelector('.cards').setAttribute('aria-label','오늘의 위시 운세 카드 두 장이 공개되었습니다.'); navigator.vibrate?.([18,34,18]); }
     packButton.addEventListener('click',openPack);
     packButton.addEventListener('keydown',event=>{ if(event.key==='Enter'||event.key===' '){ event.preventDefault(); openPack(); } });
-    cards.forEach(card=>{ card.addEventListener('pointermove',event=>{ if(!opened||matchMedia('(max-width:820px)').matches)return; const rect=card.getBoundingClientRect(), x=(event.clientX-rect.left)/rect.width, y=(event.clientY-rect.top)/rect.height; card.style.setProperty('--mx',`${x*100}%`); card.style.setProperty('--my',`${y*100}%`); card.style.transform=`translate3d(var(--x),-8px,32px) rotate(var(--r)) rotateX(${(0.5-y)*8}deg) rotateY(${(x-.5)*10}deg)`; }); card.addEventListener('pointerleave',()=>card.style.transform='translate3d(var(--x),0,0) rotate(var(--r))'); });
-    again.addEventListener('click',()=>{ body.classList.remove('opened'); cards.forEach(card=>{ card.style.transform=''; }); opened=false; packButton.removeAttribute('aria-expanded'); setTimeout(()=>{ drawThree(); packButton.focus({preventScroll:true}); },720); });
-    drawThree();
+    function selectCard(card){ cards.forEach(item=>{ const selected=item===card; item.classList.toggle('selected',selected); item.setAttribute('aria-selected',String(selected)); item.style.transform=''; }); }
+    cards.forEach(card=>{ card.setAttribute('role','button'); card.setAttribute('aria-selected','false'); card.addEventListener('click',()=>selectCard(card)); card.addEventListener('keydown',event=>{ if(event.key==='Enter'||event.key===' '){ event.preventDefault(); selectCard(card); } }); card.addEventListener('pointermove',event=>{ if(!opened||card.classList.contains('selected')||matchMedia('(max-width:820px)').matches)return; const rect=card.getBoundingClientRect(), x=(event.clientX-rect.left)/rect.width, y=(event.clientY-rect.top)/rect.height; card.style.setProperty('--mx',`${x*100}%`); card.style.setProperty('--my',`${y*100}%`); card.style.transform=`translate3d(var(--x),-8px,32px) rotate(var(--r)) rotateX(${(0.5-y)*8}deg) rotateY(${(x-.5)*10}deg)`; }); card.addEventListener('pointerleave',()=>{ if(!card.classList.contains('selected'))card.style.transform='translate3d(var(--x),0,0) rotate(var(--r))'; }); });
+    function roundedRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+    function wrapCanvasText(ctx,text,maxWidth){ const lines=[]; String(text).split('\n').forEach(paragraph=>{ if(!paragraph){ lines.push(''); return; } let line=''; for(const char of paragraph){ const test=line+char; if(line&&ctx.measureText(test).width>maxWidth){ lines.push(line); line=char; }else{ line=test; } } if(line)lines.push(line); }); return lines; }
+    function saveFortuneImage(){
+      if(!opened||currentDraw.length!==2)return;
+      saveButton.disabled=true; saveButton.textContent='저장 중...';
+      try{
+        const images=cards.map(card=>card.querySelector('img'));
+        const canvas=document.createElement('canvas'); canvas.width=1080; canvas.height=1350; const ctx=canvas.getContext('2d');
+        ctx.fillStyle='#000'; ctx.fillRect(0,0,1080,1350);
+        const glow=ctx.createRadialGradient(540,580,20,540,580,650); glow.addColorStop(0,'rgba(80,255,105,.16)'); glow.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=glow; ctx.fillRect(0,0,1080,1350);
+        ctx.fillStyle='#a6ff00'; ctx.font='900 62px -apple-system, BlinkMacSystemFont, sans-serif'; ctx.textAlign='center'; ctx.fillText('WISH FORTUNE',540,112);
+        ctx.fillStyle='rgba(243,248,233,.55)'; ctx.font='600 18px ui-monospace, monospace'; ctx.letterSpacing='4px'; ctx.fillText('오늘의 위시 운세 · 2 CARDS',540,158); ctx.letterSpacing='0px';
+        currentDraw.forEach((item,index)=>{
+          const x=index===0?55:555, y=225, w=470, h=940;
+          roundedRect(ctx,x,y,w,h,26); ctx.fillStyle='#07150b'; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle='#a6ff00'; ctx.stroke();
+          const px=x+18, py=y+18, pw=w-36, ph=pw*5/8; roundedRect(ctx,px,py,pw,ph,17); ctx.save(); ctx.clip(); const image=images[index]; ctx.drawImage(image,0,0,image.naturalWidth,image.naturalHeight*5/6,px,py,pw,ph); ctx.restore();
+          ctx.textAlign='left'; ctx.fillStyle='#a6ff00'; ctx.font='800 23px ui-monospace, monospace'; ctx.fillText(item.member,px,py+ph+58);
+          ctx.fillStyle='#f3f8e9'; ctx.font='800 40px -apple-system, BlinkMacSystemFont, sans-serif'; const lines=wrapCanvasText(ctx,item.fortune,pw); lines.slice(0,6).forEach((line,i)=>ctx.fillText(line,px,py+ph+125+i*55));
+          ctx.fillStyle='rgba(243,248,233,.48)'; ctx.font='600 17px ui-monospace, monospace'; ctx.fillText('LUCKY ITEM',px,y+h-66); ctx.fillStyle='#a6ff00'; ctx.fillText(item.item,px+138,y+h-66);
+        });
+        ctx.textAlign='center'; ctx.fillStyle='rgba(243,248,233,.38)'; ctx.font='600 16px ui-monospace, monospace'; ctx.fillText('WISH LUCK CLUB · GOOD LUCK TODAY',540,1285);
+        const dataUrl=canvas.toDataURL('image/png'); const binary=atob(dataUrl.split(',')[1]); const bytes=new Uint8Array(binary.length); for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i); const blob=new Blob([bytes],{type:'image/png'}); const url=URL.createObjectURL(blob); const link=document.createElement('a'); link.href=url; link.download=`wish-fortune-${new Date().toISOString().slice(0,10)}.png`; document.body.appendChild(link); link.click(); link.remove(); setTimeout(()=>URL.revokeObjectURL(url),2000);
+      }catch(error){ console.error(error); alert('이미지 저장에 실패했어요. 다시 한 번 눌러주세요.'); }
+      finally{ saveButton.disabled=false; saveButton.textContent='이미지 저장하기'; }
+    }
+    again.addEventListener('click',()=>{ body.classList.remove('opened'); cards.forEach(card=>{ card.style.transform=''; card.classList.remove('selected'); card.setAttribute('aria-selected','false'); }); opened=false; packButton.removeAttribute('aria-expanded'); setTimeout(()=>{ drawTwo(); packButton.focus({preventScroll:true}); },720); });
+    saveButton.addEventListener('click',saveFortuneImage);
+    drawTwo();
   </script>
 </body>
 </html>
