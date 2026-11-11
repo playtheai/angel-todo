@@ -186,20 +186,20 @@
       saveButton.disabled=true; saveButton.textContent='저장 중...';
       try{
         const images=cards.map(card=>card.querySelector('img'));
-        const canvas=document.createElement('canvas'); canvas.width=1080; canvas.height=1350; const ctx=canvas.getContext('2d');
-        ctx.fillStyle='#000'; ctx.fillRect(0,0,1080,1350);
-        const glow=ctx.createRadialGradient(540,580,20,540,580,650); glow.addColorStop(0,'rgba(80,255,105,.16)'); glow.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=glow; ctx.fillRect(0,0,1080,1350);
-        ctx.fillStyle='#a6ff00'; ctx.font='900 62px -apple-system, BlinkMacSystemFont, sans-serif'; ctx.textAlign='center'; ctx.fillText('WISH FORTUNE',540,112);
-        ctx.fillStyle='rgba(243,248,233,.55)'; ctx.font='600 18px ui-monospace, monospace'; ctx.letterSpacing='4px'; ctx.fillText('오늘의 위시 운세 · 2 CARDS',540,158); ctx.letterSpacing='0px';
-        currentDraw.forEach((item,index)=>{
-          const x=index===0?55:555, y=225, w=470, h=940;
-          roundedRect(ctx,x,y,w,h,26); ctx.fillStyle='#07150b'; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle='#a6ff00'; ctx.stroke();
-          const px=x+18, py=y+18, pw=w-36, ph=pw*5/8; roundedRect(ctx,px,py,pw,ph,17); ctx.save(); ctx.clip(); const image=images[index]; ctx.drawImage(image,0,0,image.naturalWidth,image.naturalHeight*5/6,px,py,pw,ph); ctx.restore();
-          ctx.textAlign='left'; ctx.fillStyle='#a6ff00'; ctx.font='800 23px ui-monospace, monospace'; ctx.fillText(item.member,px,py+ph+58);
-          ctx.fillStyle='#f3f8e9'; ctx.font='800 40px -apple-system, BlinkMacSystemFont, sans-serif'; const lines=wrapCanvasText(ctx,item.fortune,pw); lines.slice(0,6).forEach((line,i)=>ctx.fillText(line,px,py+ph+125+i*55));
-          ctx.fillStyle='rgba(243,248,233,.48)'; ctx.font='600 17px ui-monospace, monospace'; ctx.fillText('LUCKY ITEM',px,y+h-66); ctx.fillStyle='#a6ff00'; ctx.fillText(item.item,px+138,y+h-66);
-        });
-        ctx.textAlign='center'; ctx.fillStyle='rgba(243,248,233,.38)'; ctx.font='600 16px ui-monospace, monospace'; ctx.fillText('WISH LUCK CLUB · GOOD LUCK TODAY',540,1285);
+        const canvas=document.createElement('canvas'); canvas.width=1200; canvas.height=1000; const ctx=canvas.getContext('2d');
+        ctx.fillStyle='#000'; ctx.fillRect(0,0,1200,1000);
+        const glow=ctx.createRadialGradient(600,500,30,600,500,590); glow.addColorStop(0,'rgba(53,180,70,.16)'); glow.addColorStop(.62,'rgba(7,33,12,.08)'); glow.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=glow; ctx.fillRect(0,0,1200,1000);
+        ctx.save(); ctx.translate(600,500); ctx.strokeStyle='rgba(166,255,0,.12)'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,0,470,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([5,8]); ctx.strokeStyle='rgba(166,255,0,.09)'; ctx.beginPath(); ctx.arc(0,0,385,0,Math.PI*2); ctx.stroke(); ctx.restore();
+        function drawCover(image,x,y,w,h){ const scale=Math.max(w/image.naturalWidth,h/image.naturalHeight), sw=w/scale, sh=h/scale, sx=(image.naturalWidth-sw)/2, sy=0; ctx.drawImage(image,sx,sy,sw,sh,x,y,w,h); }
+        function drawSavedCard(item,image,index){
+          const w=510,h=650,angle=index===0?-.045:.045,cx=index===0?465:735,cy=index===0?505:495,x=-w/2,y=-h/2,pad=15,photoH=255;
+          ctx.save(); ctx.translate(cx,cy); ctx.rotate(angle); ctx.shadowColor='rgba(0,0,0,.82)'; ctx.shadowBlur=42; ctx.shadowOffsetY=28; roundedRect(ctx,x,y,w,h,24); ctx.fillStyle='#06150a'; ctx.fill(); ctx.shadowColor='transparent'; ctx.lineWidth=3; ctx.strokeStyle='rgba(166,255,0,.82)'; ctx.stroke();
+          roundedRect(ctx,x+pad,y+pad,w-pad*2,photoH,15); ctx.save(); ctx.clip(); drawCover(image,x+pad,y+pad,w-pad*2,photoH); const shade=ctx.createLinearGradient(0,y+pad,0,y+pad+photoH); shade.addColorStop(.65,'rgba(0,0,0,0)'); shade.addColorStop(1,'rgba(0,15,3,.12)'); ctx.fillStyle=shade; ctx.fillRect(x+pad,y+pad,w-pad*2,photoH); ctx.restore();
+          const textX=x+34,contentW=w-68,photoBottom=y+pad+photoH; ctx.textAlign='left'; ctx.fillStyle='#a6ff00'; ctx.font='800 18px ui-monospace, SFMono-Regular, Menlo, monospace'; ctx.fillText(item.member,textX,photoBottom+52);
+          ctx.fillStyle='#f3f8e9'; ctx.font='800 31px -apple-system, BlinkMacSystemFont, sans-serif'; const lines=wrapCanvasText(ctx,item.fortune,contentW); lines.slice(0,4).forEach((line,lineIndex)=>ctx.fillText(line,textX,photoBottom+108+lineIndex*43));
+          ctx.fillStyle='rgba(243,248,233,.42)'; ctx.font='600 14px ui-monospace, SFMono-Regular, Menlo, monospace'; ctx.fillText('LUCKY ITEM  ·',textX,y+h-39); ctx.fillStyle='#a6ff00'; ctx.fillText(item.item,textX+120,y+h-39); ctx.restore();
+        }
+        currentDraw.forEach((item,index)=>drawSavedCard(item,images[index],index));
         const dataUrl=canvas.toDataURL('image/png'); const binary=atob(dataUrl.split(',')[1]); const bytes=new Uint8Array(binary.length); for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i); const blob=new Blob([bytes],{type:'image/png'}); const url=URL.createObjectURL(blob); const link=document.createElement('a'); link.href=url; link.download=`wish-fortune-${new Date().toISOString().slice(0,10)}.png`; document.body.appendChild(link); link.click(); link.remove(); setTimeout(()=>URL.revokeObjectURL(url),2000);
       }catch(error){ console.error(error); alert('이미지 저장에 실패했어요. 다시 한 번 눌러주세요.'); }
       finally{ saveButton.disabled=false; saveButton.textContent='이미지 저장하기'; }
